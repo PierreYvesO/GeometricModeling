@@ -94,7 +94,7 @@ namespace HalfEdge
 
     public class HalfEdgeMesh
     {
-        public List< Vertex> vertices = new List<Vertex>();
+        public List<Vertex> vertices = new List<Vertex>();
         public List<HalfEdge> edges = new List<HalfEdge>();
         public List<Face> faces = new List<Face>();
 
@@ -209,6 +209,38 @@ namespace HalfEdge
             return mesh;
         }
 
+        public List<HalfEdge> getAdjacentEdges(Vertex vertex)
+        {
+            List<HalfEdge> adjacentEdges = new List<HalfEdge>();
+            HalfEdge currentOutgoingEdge = vertex.outgoingEdge;
+            Boolean edgeHasTwin = true;
+            while (edgeHasTwin) {
+                if (!adjacentEdges.Contains(currentOutgoingEdge) && currentOutgoingEdge.index != -1) {
+                    adjacentEdges.Add(currentOutgoingEdge);
+                    currentOutgoingEdge = currentOutgoingEdge.prevEdge;
+                    adjacentEdges.Add(currentOutgoingEdge);
+                    currentOutgoingEdge = currentOutgoingEdge.twinEdge;
+                } else {
+                    edgeHasTwin = false;
+                }
+            }
+            if (currentOutgoingEdge != vertex.outgoingEdge) {
+                currentOutgoingEdge = vertex.outgoingEdge.twinEdge;
+                edgeHasTwin = true;
+                while (edgeHasTwin) {
+                    if (!adjacentEdges.Contains(currentOutgoingEdge) && currentOutgoingEdge.index != -1) {
+                        adjacentEdges.Add(currentOutgoingEdge);
+                        currentOutgoingEdge = currentOutgoingEdge.nextEdge;
+                        adjacentEdges.Add(currentOutgoingEdge);
+                        currentOutgoingEdge = currentOutgoingEdge.twinEdge;
+                    } else {
+                        edgeHasTwin = false;
+                    }
+                }
+            }
+            return adjacentEdges;
+        }
+
         public override string ToString()
         {
             string str = "Vertices\t\t\t\tFaces\t\t\tHalfEdges\n";
@@ -253,6 +285,8 @@ public class GeometricModeling : MonoBehaviour
         Debug.Log(halfEdgeMesh);
         Mesh mesh = HalfEdge.HalfEdgeMesh.ConvertHalfEdgeMeshToFaceVertexMesh(halfEdgeMesh);
         Debug.Log(exportMeshToExcel(mesh));
+        List<HalfEdge.HalfEdge> adjacentEdgesOfVertex = halfEdgeMesh.getAdjacentEdges(halfEdgeMesh.vertices[2]);
+        Debug.Log(string.Join("\n", adjacentEdgesOfVertex));
     }
 
     string exportMeshToExcel(Mesh mesh)
