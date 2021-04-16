@@ -363,9 +363,7 @@ public class GeometricModeling : MonoBehaviour
     void Start()
     {
         Mesh[] meshs = { CreateCube(Vector3.one), CreatePlaneXZMadeOfQuads(new Vector2(2, 1), 4, 2), CreateRegularQuadPolygon(Vector2.one, 20) };
-
         mf.sharedMesh = meshs[1];
-
 
         //Test convert mesh to halfEdgeMesh
         HalfEdgeMesh halfEdgeMesh = HalfEdgeMesh.ConvertFaceVertexMeshToHalfEdgeMesh(mf.sharedMesh);
@@ -404,15 +402,15 @@ public class GeometricModeling : MonoBehaviour
         HalfEdgeMesh heMeshClosed = HalfEdgeMesh.ConvertFaceVertexMeshToHalfEdgeMesh(meshs[0]);
         foreach(Vertex v in heMeshClosed.vertices)
         {
-            Debug.Assert(heMeshClosed.getValence(v) == 4);
-            Debug.Assert(heMeshClosed.getAdjacentEdges(v).Count == 8);
+            Debug.Assert(heMeshClosed.getValence(v) == 3);
+            Debug.Assert(heMeshClosed.getAdjacentEdges(v).Count == 6);
         }
         //Tests valence/cycles bounded (quad)
         heMeshClosed = HalfEdgeMesh.ConvertFaceVertexMeshToHalfEdgeMesh(meshs[1]);
         foreach (Vertex v in heMeshClosed.vertices)
         {
             Debug.Assert(heMeshClosed.getValence(v) >= 2);
-            Debug.Assert(heMeshClosed.getAdjacentEdges(v).Count >= 4);
+            Debug.Assert(heMeshClosed.getAdjacentEdges(v).Count >= 2);
         }
 
 
