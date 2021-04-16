@@ -241,6 +241,20 @@ namespace HalfEdge
             return adjacentEdges;
         }
 
+
+        public List<Face> getFacesWithSameVertex(Vertex vertex)
+        {
+            List<Face> faces = new List<Face>();
+            foreach(HalfEdge edge in getAdjacentEdges(vertex))
+            {
+                if(!faces.Contains(edge.face))
+                {
+                    faces.Add(edge.face);
+                }
+            }
+            return faces;
+        }
+
         public override string ToString()
         {
             string str = "Vertices\t\t\t\tFaces\t\t\tHalfEdges\n";
@@ -287,6 +301,8 @@ public class GeometricModeling : MonoBehaviour
         Debug.Log(exportMeshToExcel(mesh));
         List<HalfEdge.HalfEdge> adjacentEdgesOfVertex = halfEdgeMesh.getAdjacentEdges(halfEdgeMesh.vertices[2]);
         Debug.Log(string.Join("\n", adjacentEdgesOfVertex));
+        Debug.Log(string.Join("\n", halfEdgeMesh.getFacesWithSameVertex(halfEdgeMesh.vertices[2])));
+
     }
 
     string exportMeshToExcel(Mesh mesh)
