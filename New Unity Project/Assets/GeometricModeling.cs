@@ -241,6 +241,42 @@ namespace HalfEdgeS
             return adjacentEdges;
         }
 
+        public int getValence(Vertex vertex)
+        {
+            List<HalfEdge> knownEdges = new List<HalfEdge>();
+            HalfEdge currentOutgoingEdge = vertex.outgoingEdge;
+            int cpt = 1;
+            Boolean edgeHasTwin = true;
+            while (edgeHasTwin) {
+                if (!knownEdges.Contains(currentOutgoingEdge) && currentOutgoingEdge.index != -1) {
+                    knownEdges.Add(currentOutgoingEdge);
+                    currentOutgoingEdge = currentOutgoingEdge.prevEdge;
+                    knownEdges.Add(currentOutgoingEdge);
+                    currentOutgoingEdge = currentOutgoingEdge.twinEdge;
+                    cpt++;
+                } else {
+                    edgeHasTwin = false;
+                }
+            }
+            if (currentOutgoingEdge != vertex.outgoingEdge) {
+                currentOutgoingEdge = vertex.outgoingEdge.twinEdge;
+                edgeHasTwin = true;
+                while (edgeHasTwin) {
+                    if (!knownEdges.Contains(currentOutgoingEdge) && currentOutgoingEdge.index != -1) {
+                        knownEdges.Add(currentOutgoingEdge);
+                        currentOutgoingEdge = currentOutgoingEdge.nextEdge;
+                        knownEdges.Add(currentOutgoingEdge);
+                        cpt++;
+                        currentOutgoingEdge = currentOutgoingEdge.twinEdge;
+                    } else {
+                        edgeHasTwin = false;
+                    }
+                }
+            } else {
+                cpt--;
+            }
+            return cpt;
+        }
 
         public List<Face> getFacesWithSameVertex(Vertex vertex)
         {
@@ -333,10 +369,18 @@ public class GeometricModeling : MonoBehaviour
         Debug.Log(exportMeshToExcel(mf.sharedMesh));
         HalfEdgeMesh halfEdgeMesh = HalfEdgeMesh.ConvertFaceVertexMeshToHalfEdgeMesh(mf.sharedMesh);
         Debug.Log(halfEdgeMesh);
+
+        //Test convert haledesmesh to mesh
         Mesh mesh = HalfEdgeMesh.ConvertHalfEdgeMeshToFaceVertexMesh(halfEdgeMesh);
         Debug.Log(exportMeshToExcel(mesh));
+
+        //Test adjacent edges
         List<HalfEdge> adjacentEdgesOfVertex = halfEdgeMesh.getAdjacentEdges(halfEdgeMesh.vertices[2]);
         Debug.Log(string.Join("\n", adjacentEdgesOfVertex));
+
+        //Test valence
+        int valenceOfVertex = halfEdgeMesh.getValence(halfEdgeMesh.vertices[9]);
+        Debug.Log(valenceOfVertex);
 
         // test getFacesWithSameVertex
         Debug.Log(string.Join("\n", halfEdgeMesh.getFacesWithSameVertex(halfEdgeMesh.vertices[2])));
@@ -395,14 +439,14 @@ public class GeometricModeling : MonoBehaviour
         }
     }
 
-    private void DrawGizmosHalfEdge(HalfEdge.HalfEdgeMesh heMesh)
+    private void DrawGizmosHalfEdge(HalfEdgeMesh heMesh)
     {
         
         Gizmos.color = Color.green;
         GUIStyle style = new GUIStyle();
         style.fontSize = 19;
         style.normal.textColor = Color.green;
-        List<HalfEdge.HalfEdge> edges  = heMesh.edges;
+        List<HalfEdge> edges  = heMesh.edges;
         for (int i = 0; i < edges.Count; i++)
         {
             Vector3 from = m_transform.TransformPoint(edges[i].sourceVertex.position);
@@ -416,7 +460,7 @@ public class GeometricModeling : MonoBehaviour
             Handles.Label((from+to)/2, str, style);
         }
 
-        foreach(HalfEdge.Face face in heMesh.faces)
+        foreach(Face face in heMesh.faces)
         {
             Vector3 centroid = heMesh.getCentroidFromFace(face);
             Gizmos.DrawSphere(centroid, .01f);
@@ -472,7 +516,7 @@ public class GeometricModeling : MonoBehaviour
             if (drawGizmosFaces) DrawGizmosFaces(mf.sharedMesh);
             if (drawGizmosEdges) DrawGizmosEdges(mf.sharedMesh);
             if (drawGizmosVertices) DrawGizmosVertices(mf.sharedMesh);
-            if (drawGizmosHalfEdges) DrawGizmosHalfEdge(HalfEdge.HalfEdgeMesh.ConvertFaceVertexMeshToHalfEdgeMesh(mf.sharedMesh));
+            if (drawGizmosHalfEdges) DrawGizmosHalfEdge(HalfEdgeMesh.ConvertFaceVertexMeshToHalfEdgeMesh(mf.sharedMesh));
         }
     }
 
