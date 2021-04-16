@@ -3,8 +3,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
-using HalfEdge;
-namespace HalfEdge
+using HalfEdgeS;
+namespace HalfEdgeS
 {
     public class HalfEdge
     {
@@ -255,6 +255,42 @@ namespace HalfEdge
             return faces;
         }
 
+        public List<HalfEdge> getEdgesFromFace(Face face)
+        {
+            List<HalfEdge> hes = new List<HalfEdge>();
+            HalfEdge startEdge = face.edge;
+            do
+            {
+                hes.Add(startEdge);
+                startEdge = startEdge.nextEdge;
+            } while (startEdge != face.edge);
+
+            return hes;
+        }
+
+        public List<Vertex> getVerticesFromFace(Face face)
+        {
+            List<Vertex> vertices = new List<Vertex>();
+            HalfEdge startEdge = face.edge;
+            do
+            {
+                vertices.Add(startEdge.sourceVertex);
+                startEdge = startEdge.nextEdge;
+            } while (startEdge != face.edge);
+
+            return vertices;
+        }
+
+        public Vector3 getCentroidFromFace(Face face)
+        {
+            Vector3 centroid = Vector3.zero;
+            foreach(Vertex v in getVerticesFromFace(face))
+            {
+                centroid += v.position *.25f;
+            }
+            return centroid;
+        }
+
         public override string ToString()
         {
             string str = "Vertices\t\t\t\tFaces\t\t\tHalfEdges\n";
@@ -295,13 +331,25 @@ public class GeometricModeling : MonoBehaviour
         //mf.sharedMesh = CreateRegularQuadPolygon(Vector2.one, 20);
 
         Debug.Log(exportMeshToExcel(mf.sharedMesh));
-        HalfEdge.HalfEdgeMesh halfEdgeMesh = HalfEdge.HalfEdgeMesh.ConvertFaceVertexMeshToHalfEdgeMesh(mf.sharedMesh);
+        HalfEdgeMesh halfEdgeMesh = HalfEdgeMesh.ConvertFaceVertexMeshToHalfEdgeMesh(mf.sharedMesh);
         Debug.Log(halfEdgeMesh);
-        Mesh mesh = HalfEdge.HalfEdgeMesh.ConvertHalfEdgeMeshToFaceVertexMesh(halfEdgeMesh);
+        Mesh mesh = HalfEdgeMesh.ConvertHalfEdgeMeshToFaceVertexMesh(halfEdgeMesh);
         Debug.Log(exportMeshToExcel(mesh));
-        List<HalfEdge.HalfEdge> adjacentEdgesOfVertex = halfEdgeMesh.getAdjacentEdges(halfEdgeMesh.vertices[2]);
+        List<HalfEdge> adjacentEdgesOfVertex = halfEdgeMesh.getAdjacentEdges(halfEdgeMesh.vertices[2]);
         Debug.Log(string.Join("\n", adjacentEdgesOfVertex));
+
+        // test getFacesWithSameVertex
         Debug.Log(string.Join("\n", halfEdgeMesh.getFacesWithSameVertex(halfEdgeMesh.vertices[2])));
+ 
+        //Test getEdges & VerticesFromFace
+        List<HalfEdge> hes = halfEdgeMesh.getEdgesFromFace(halfEdgeMesh.faces[0]);
+        List<Vertex> vertices = halfEdgeMesh.getVerticesFromFace(halfEdgeMesh.faces[0]); ;
+        Debug.Log(string.Join("\n", hes));
+        Debug.Log(string.Join("\n", vertices));
+
+        //Test getcentroid
+        Vector3 centroid = halfEdgeMesh.getCentroidFromFace(halfEdgeMesh.faces[0]);
+        Debug.Log(centroid);
 
     }
 
@@ -366,6 +414,12 @@ public class GeometricModeling : MonoBehaviour
             if (prev.z > from.z) from.z = (prev.z * 0.2f + from.z) / 1.2f;
 
             Handles.Label((from+to)/2, str, style);
+        }
+
+        foreach(HalfEdge.Face face in heMesh.faces)
+        {
+            Vector3 centroid = heMesh.getCentroidFromFace(face);
+            Gizmos.DrawSphere(centroid, .01f);
         }
     }
 
