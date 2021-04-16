@@ -241,6 +241,43 @@ namespace HalfEdge
             return adjacentEdges;
         }
 
+        public int getValence(Vertex vertex)
+        {
+            List<HalfEdge> knownEdges = new List<HalfEdge>();
+            HalfEdge currentOutgoingEdge = vertex.outgoingEdge;
+            int cpt = 1;
+            Boolean edgeHasTwin = true;
+            while (edgeHasTwin) {
+                if (!knownEdges.Contains(currentOutgoingEdge) && currentOutgoingEdge.index != -1) {
+                    knownEdges.Add(currentOutgoingEdge);
+                    currentOutgoingEdge = currentOutgoingEdge.prevEdge;
+                    knownEdges.Add(currentOutgoingEdge);
+                    currentOutgoingEdge = currentOutgoingEdge.twinEdge;
+                    cpt++;
+                } else {
+                    edgeHasTwin = false;
+                }
+            }
+            if (currentOutgoingEdge != vertex.outgoingEdge) {
+                currentOutgoingEdge = vertex.outgoingEdge.twinEdge;
+                edgeHasTwin = true;
+                while (edgeHasTwin) {
+                    if (!knownEdges.Contains(currentOutgoingEdge) && currentOutgoingEdge.index != -1) {
+                        knownEdges.Add(currentOutgoingEdge);
+                        currentOutgoingEdge = currentOutgoingEdge.nextEdge;
+                        knownEdges.Add(currentOutgoingEdge);
+                        cpt++;
+                        currentOutgoingEdge = currentOutgoingEdge.twinEdge;
+                    } else {
+                        edgeHasTwin = false;
+                    }
+                }
+            } else {
+                cpt--;
+            }
+            return cpt;
+        }
+
         public override string ToString()
         {
             string str = "Vertices\t\t\t\tFaces\t\t\tHalfEdges\n";
@@ -287,6 +324,8 @@ public class GeometricModeling : MonoBehaviour
         Debug.Log(exportMeshToExcel(mesh));
         List<HalfEdge.HalfEdge> adjacentEdgesOfVertex = halfEdgeMesh.getAdjacentEdges(halfEdgeMesh.vertices[2]);
         Debug.Log(string.Join("\n", adjacentEdgesOfVertex));
+        int valenceOfVertex = halfEdgeMesh.getValence(halfEdgeMesh.vertices[9]);
+        Debug.Log(valenceOfVertex);
     }
 
     string exportMeshToExcel(Mesh mesh)
