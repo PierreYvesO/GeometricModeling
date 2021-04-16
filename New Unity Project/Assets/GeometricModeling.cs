@@ -362,16 +362,21 @@ public class GeometricModeling : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        //mf.sharedMesh = CreateCube(Vector3.one);
-        mf.sharedMesh = CreatePlaneXZMadeOfQuads(new Vector2(2, 1), 4, 2);
-        //mf.sharedMesh = CreateRegularQuadPolygon(Vector2.one, 20);
+        Mesh[] meshs = { CreateCube(Vector3.one), CreatePlaneXZMadeOfQuads(new Vector2(2, 1), 4, 2), CreateRegularQuadPolygon(Vector2.one, 20) };
 
-        Debug.Log(exportMeshToExcel(mf.sharedMesh));
+        mf.sharedMesh = meshs[1];
+
+
+        //Test convert mesh to halfEdgeMesh
         HalfEdgeMesh halfEdgeMesh = HalfEdgeMesh.ConvertFaceVertexMeshToHalfEdgeMesh(mf.sharedMesh);
+
+        //Test export halfedgesmesh to Excel
         Debug.Log(halfEdgeMesh);
 
-        //Test convert haledesmesh to mesh
+        //Test convert halfedgesmesh to mesh
         Mesh mesh = HalfEdgeMesh.ConvertHalfEdgeMeshToFaceVertexMesh(halfEdgeMesh);
+
+        //Test excel export of mesh
         Debug.Log(exportMeshToExcel(mesh));
 
         //Test adjacent edges
@@ -394,6 +399,22 @@ public class GeometricModeling : MonoBehaviour
         //Test getcentroid
         Vector3 centroid = halfEdgeMesh.getCentroidFromFace(halfEdgeMesh.faces[0]);
         Debug.Log(centroid);
+
+        //Tests valence/cycles closed (cube)
+        HalfEdgeMesh heMeshClosed = HalfEdgeMesh.ConvertFaceVertexMeshToHalfEdgeMesh(meshs[0]);
+        foreach(Vertex v in heMeshClosed.vertices)
+        {
+            Debug.Assert(heMeshClosed.getValence(v) == 4);
+            Debug.Assert(heMeshClosed.getAdjacentEdges(v).Count == 8);
+        }
+        //Tests valence/cycles bounded (quad)
+        heMeshClosed = HalfEdgeMesh.ConvertFaceVertexMeshToHalfEdgeMesh(meshs[1]);
+        foreach (Vertex v in heMeshClosed.vertices)
+        {
+            Debug.Assert(heMeshClosed.getValence(v) >= 2);
+            Debug.Assert(heMeshClosed.getAdjacentEdges(v).Count >= 4);
+        }
+
 
     }
 
