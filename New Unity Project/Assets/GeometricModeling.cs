@@ -363,7 +363,7 @@ public class GeometricModeling : MonoBehaviour
     void Start()
     {
         Mesh[] meshs = { CreateCube(Vector3.one), CreatePlaneXZMadeOfQuads(new Vector2(2, 1), 4, 2), CreateRegularQuadPolygon(Vector2.one, 20) };
-        mf.sharedMesh = meshs[1];
+        mf.sharedMesh = meshs[2];
 
         //Test convert mesh to halfEdgeMesh
         HalfEdgeMesh halfEdgeMesh = HalfEdgeMesh.ConvertFaceVertexMeshToHalfEdgeMesh(mf.sharedMesh);
